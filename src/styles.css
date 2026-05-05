@@ -152,8 +152,10 @@ h1 {
 
 .store-badge {
   display: inline-flex;
+  align-items: center;
   height: 40px;
   line-height: 0;
+  overflow: hidden;
   text-decoration: none;
 }
 
@@ -161,6 +163,10 @@ h1 {
   display: block;
   width: auto;
   height: 40px;
+}
+
+.store-badge:last-of-type img {
+  height: 52px;
 }
 
 a {
