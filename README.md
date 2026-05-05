@@ -7,7 +7,7 @@ Read-only web frontend for the Libra Weight Loss app.
 - Lets the user paste a Libra access token in the browser.
 - Stores the token in `localStorage` under `libra.accessToken`.
 - Calls `https://api.libra-app.eu` directly from the browser.
-- Shows the latest weight and the last 31 days of weight history.
+- Shows the latest weight and selectable weight history ranges.
 
 No Libra token is stored in GitHub, Cloudflare environment variables, cookies,
 server logs, or a backend service.
