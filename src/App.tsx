@@ -157,7 +157,7 @@ export default function App() {
             <a href="https://libra-app.eu/" target="_blank" rel="noreferrer">
               Libra Weight Loss app
             </a>
-            .
+            . Your token and Libra data stay in this browser; this site has no backend storage.
           </p>
         </div>
         <TokenForm
@@ -172,7 +172,10 @@ export default function App() {
       {loadState.status === "idle" && (
         <section className="empty-state">
           <h2>Paste your Libra token</h2>
-          <p>The token is stored locally in this browser.</p>
+          <p>The token is stored only in this browser's localStorage.</p>
+          <p className="privacy-note">
+            It is never sent to this site's hosting, stored in cookies, or saved on a server. Weight data is fetched directly from Libra API and processed locally in your browser.
+          </p>
         </section>
       )}
 
