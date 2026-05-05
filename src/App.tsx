@@ -8,10 +8,10 @@ import {
 
 const TOKEN_STORAGE_KEY = "libra.accessToken";
 const HISTORY_RANGES = [
-  { id: "31d", label: "31 dagar", days: 31 },
-  { id: "90d", label: "90 dagar", days: 90 },
-  { id: "1y", label: "1 år", days: 365 },
-  { id: "all", label: "All historik", from: new Date("2000-01-01T00:00:00.000Z") },
+  { id: "31d", label: "31 days", days: 31 },
+  { id: "90d", label: "90 days", days: 90 },
+  { id: "1y", label: "Past year", days: 365 },
+  { id: "all", label: "Full history", from: new Date("2000-01-01T00:00:00.000Z") },
 ] as const;
 
 type HistoryRangeId = (typeof HISTORY_RANGES)[number]["id"];
@@ -69,6 +69,16 @@ function looksLikeLimitedHistory(rangeId: HistoryRangeId, entries: WeightEntry[]
   return oldestEntryTime > limitedWindowStart.getTime();
 }
 
+function getHistoryHeading(rangeId: HistoryRangeId) {
+  const option = getHistoryRangeOption(rangeId);
+
+  if (rangeId === "all" || rangeId === "1y") {
+    return option.label;
+  }
+
+  return `Last ${option.label}`;
+}
+
 export default function App() {
   const [token, setToken] = useState(getStoredToken);
   const [tokenInput, setTokenInput] = useState(token);
@@ -108,7 +118,7 @@ export default function App() {
 
         setLoadState({
           status: "error",
-          message: "Kunde inte hämta data från Libra.",
+          message: "Could not fetch data from Libra.",
           isAuthError: false,
         });
       }
@@ -140,10 +150,10 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <div>
-          <p className="eyebrow">Webfront till Libra</p>
-          <h1>Viktöversikt</h1>
+          <p className="eyebrow">Web frontend for Libra</p>
+          <h1>Weight overview</h1>
           <p className="intro">
-            En lokal tokenbaserad vy för{" "}
+            A local token-based view for{" "}
             <a href="https://libra-app.eu/" target="_blank" rel="noreferrer">
               Libra Weight Loss app
             </a>
@@ -161,20 +171,20 @@ export default function App() {
 
       {loadState.status === "idle" && (
         <section className="empty-state">
-          <h2>Klistra in din Libra-token</h2>
-          <p>Tokenen sparas lokalt i den här browsern.</p>
+          <h2>Paste your Libra token</h2>
+          <p>The token is stored locally in this browser.</p>
         </section>
       )}
 
       {loadState.status === "loading" && (
         <section className="status-panel" aria-live="polite">
-          Hämtar viktdata...
+          Fetching weight data...
         </section>
       )}
 
       {loadState.status === "error" && (
         <section className="status-panel error" role="alert">
-          <h2>{loadState.isAuthError ? "Ogiltig token" : "Något gick fel"}</h2>
+          <h2>{loadState.isAuthError ? "Invalid token" : "Something went wrong"}</h2>
           <p>{loadState.message}</p>
         </section>
       )}
@@ -218,10 +228,10 @@ function TokenForm({
           autoComplete="off"
           onChange={(event) => onTokenInputChange(event.target.value)}
         />
-        <button type="submit">Spara</button>
+        <button type="submit">Save</button>
         {hasToken && (
           <button className="secondary" type="button" onClick={onClearToken}>
-            Rensa
+            Clear
           </button>
         )}
       </div>
@@ -246,21 +256,21 @@ function Dashboard({
 
   return (
     <div className="dashboard">
-      <section className="metrics-grid" aria-label="Sammanfattning">
+      <section className="metrics-grid" aria-label="Summary">
         <MetricCard
-          label="Senaste vikt"
+          label="Latest weight"
           value={`${formatNumber(latest.weight)} kg`}
           detail={formatDateTime(latest.date)}
         />
         <MetricCard
           label="Trend"
           value={`${formatNumber(latest.weight_trend)} kg`}
-          detail="Libra trendvikt"
+          detail="Libra trend weight"
         />
         <MetricCard
           label={selectedRange.label}
           value={summary.deltaText}
-          detail={`${history.length} mätningar`}
+          detail={`${history.length} measurements`}
           tone={summary.deltaTone}
         />
       </section>
@@ -268,11 +278,11 @@ function Dashboard({
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <p className="eyebrow">Historik</p>
-            <h2>{selectedRange.id === "all" ? "All historik" : `Senaste ${selectedRange.label}`}</h2>
+            <p className="eyebrow">History</p>
+            <h2>{getHistoryHeading(historyRange)}</h2>
           </div>
           <label className="range-control">
-            <span>Intervall</span>
+            <span>Range</span>
             <select
               value={historyRange}
               onChange={(event) => onHistoryRangeChange(event.target.value as HistoryRangeId)}
@@ -286,13 +296,13 @@ function Dashboard({
           </label>
         </div>
         {history.length === 0 ? (
-          <p className="muted">Inga mätningar hittades för perioden.</p>
+          <p className="muted">No measurements found for this range.</p>
         ) : (
           <>
             {showLimitedHistoryNotice && (
               <div className="notice" role="status">
-                Libra API:t returnerade bara data från {formatShortDate(history[0].date)} och framåt för det här intervallet.
-                Om du har äldre mätningar i Libra kan tokenen eller API-accessen vara begränsad till senaste 31 dagarna.
+                Libra API only returned data from {formatShortDate(history[0].date)} onward for this range.
+                If you have older entries in Libra, this token or API access may be limited to the latest 31 days.
               </div>
             )}
             <WeightChart entries={history} />
@@ -334,7 +344,7 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
   if (points.length < 2) {
     return (
       <div className="chart-placeholder">
-        Minst två mätningar behövs för en graf.
+        At least two measurements are needed for a chart.
       </div>
     );
   }
@@ -372,7 +382,7 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
 
   return (
     <div className="chart-wrap">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Vikt och trend">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Weight and trend">
         {ticks.map((tick) => (
           <g key={tick}>
             <line
@@ -406,7 +416,7 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
         </text>
       </svg>
       <div className="legend">
-        <span><i className="legend-weight" /> Vikt</span>
+        <span><i className="legend-weight" /> Weight</span>
         <span><i className="legend-trend" /> Trend</span>
       </div>
     </div>
@@ -419,10 +429,10 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
       <table>
         <thead>
           <tr>
-            <th>Datum</th>
-            <th>Vikt</th>
+            <th>Date</th>
+            <th>Weight</th>
             <th>Trend</th>
-            <th>Logg</th>
+            <th>Log</th>
           </tr>
         </thead>
         <tbody>
@@ -457,21 +467,21 @@ function getSummary(entries: WeightEntry[]) {
 }
 
 function formatNumber(value: number) {
-  return new Intl.NumberFormat("sv-SE", {
+  return new Intl.NumberFormat("en-GB", {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   }).format(value);
 }
 
 function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("sv-SE", {
+  return new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
 }
 
 function formatShortDate(value: string) {
-  return new Intl.DateTimeFormat("sv-SE", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
   }).format(new Date(value));
