@@ -3,8 +3,8 @@
 Read-only web frontend for the Libra Weight Manager app.
 
 This project is unofficial and is not affiliated with, endorsed by, or
-maintained by Libra. The App Store and Google Play badges are official badge
-assets stored locally in `public/badges`; do not redraw, recolor, or otherwise
+maintained by Libra. App Store and Google Play badge images are loaded directly
+from official Apple and Google badge URLs; do not redraw, recolor, or otherwise
 modify them.
 
 ## What it does
@@ -49,7 +49,7 @@ Use these settings:
 
 The `public/_headers` file is copied into the build output by Vite and gives
 Cloudflare Pages a restrictive Content Security Policy that only allows API
-requests to Libra.
+requests to Libra and store badge images from Apple and Google.
 
 ## Privacy
 
