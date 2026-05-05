@@ -7,6 +7,7 @@ import {
 } from "./libraApi";
 
 const TOKEN_STORAGE_KEY = "libra.accessToken";
+const SESSION_TOKEN_STORAGE_KEY = "libra.sessionAccessToken";
 const HISTORY_RANGES = [
   { id: "31d", label: "31 days", days: 31 },
   { id: "90d", label: "90 days", days: 90 },
@@ -25,7 +26,11 @@ type LoadState =
 
 function getStoredToken() {
   try {
-    return localStorage.getItem(TOKEN_STORAGE_KEY) ?? "";
+    return (
+      sessionStorage.getItem(SESSION_TOKEN_STORAGE_KEY) ??
+      localStorage.getItem(TOKEN_STORAGE_KEY) ??
+      ""
+    );
   } catch {
     return "";
   }
@@ -33,10 +38,17 @@ function getStoredToken() {
 
 function storeToken(token: string) {
   localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  sessionStorage.removeItem(SESSION_TOKEN_STORAGE_KEY);
+}
+
+function storeSessionToken(token: string) {
+  sessionStorage.setItem(SESSION_TOKEN_STORAGE_KEY, token);
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
 }
 
 function removeStoredToken() {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
+  sessionStorage.removeItem(SESSION_TOKEN_STORAGE_KEY);
 }
 
 function getHistoryRangeOption(rangeId: HistoryRangeId) {
@@ -139,6 +151,15 @@ export default function App() {
     setToken(nextToken);
   }
 
+  function handleUseSessionToken() {
+    const nextToken = tokenInput.trim();
+    if (!nextToken) {
+      return;
+    }
+    storeSessionToken(nextToken);
+    setToken(nextToken);
+  }
+
   function handleClearToken() {
     removeStoredToken();
     setToken("");
@@ -183,6 +204,7 @@ export default function App() {
           hasToken={Boolean(token)}
           onTokenInputChange={setTokenInput}
           onSaveToken={handleSaveToken}
+          onUseSessionToken={handleUseSessionToken}
           onClearToken={handleClearToken}
         />
       </header>
@@ -190,7 +212,7 @@ export default function App() {
       {loadState.status === "idle" && (
         <section className="empty-state">
           <h2>Paste your Libra token</h2>
-          <p>The token is stored only in this browser's localStorage.</p>
+          <p>Use it for this browser session, or save it in this browser's localStorage.</p>
           <p className="privacy-note">
             It is never sent to this site's hosting, stored in cookies, or saved on a server. Weight data is fetched directly from Libra API and processed locally in your browser.
           </p>
@@ -231,6 +253,7 @@ type TokenFormProps = {
   hasToken: boolean;
   onTokenInputChange: (value: string) => void;
   onSaveToken: (event: FormEvent<HTMLFormElement>) => void;
+  onUseSessionToken: () => void;
   onClearToken: () => void;
 };
 
@@ -239,6 +262,7 @@ function TokenForm({
   hasToken,
   onTokenInputChange,
   onSaveToken,
+  onUseSessionToken,
   onClearToken,
 }: TokenFormProps) {
   return (
@@ -254,6 +278,9 @@ function TokenForm({
           onChange={(event) => onTokenInputChange(event.target.value)}
         />
         <button type="submit">Save</button>
+        <button className="secondary" type="button" onClick={onUseSessionToken}>
+          Use session
+        </button>
         {hasToken && (
           <button className="secondary" type="button" onClick={onClearToken}>
             Clear
