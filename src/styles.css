@@ -123,6 +123,25 @@ h1 {
   line-height: 1.5;
 }
 
+.download-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.store-badge {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.store-badge img {
+  display: block;
+  height: 42px;
+  width: auto;
+}
+
 a {
   color: #1f4f46;
   font-weight: 800;
@@ -399,6 +418,11 @@ td {
 
   .topbar {
     align-items: stretch;
+    flex-direction: column;
+  }
+
+  .download-links {
+    align-items: flex-start;
     flex-direction: column;
   }
 
