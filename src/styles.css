@@ -115,6 +115,25 @@ h1 {
   line-height: 0.98;
 }
 
+.intro {
+  max-width: 620px;
+  margin: 16px 0 0;
+  color: #4f4b45;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+a {
+  color: #1f4f46;
+  font-weight: 800;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: #173c35;
+}
+
 h2 {
   margin-bottom: 0;
   font-size: 1.4rem;
@@ -233,6 +252,16 @@ h2 {
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.notice {
+  margin-bottom: 16px;
+  border: 1px solid rgba(194, 104, 51, 0.32);
+  border-radius: 8px;
+  background: #fff8ed;
+  color: #6f3b17;
+  line-height: 1.5;
+  padding: 13px 15px;
 }
 
 .chart-wrap {
