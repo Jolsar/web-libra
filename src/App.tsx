@@ -7,7 +7,14 @@ import {
 } from "./libraApi";
 
 const TOKEN_STORAGE_KEY = "libra.accessToken";
-const HISTORY_DAYS = 31;
+const HISTORY_RANGES = [
+  { id: "31d", label: "31 dagar", days: 31 },
+  { id: "90d", label: "90 dagar", days: 90 },
+  { id: "1y", label: "1 år", days: 365 },
+  { id: "all", label: "All historik", from: new Date("2000-01-01T00:00:00.000Z") },
+] as const;
+
+type HistoryRangeId = (typeof HISTORY_RANGES)[number]["id"];
 
 type LoadState =
   | { status: "idle" }
@@ -31,10 +38,20 @@ function removeStoredToken() {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
 }
 
-function getDefaultRange() {
+function getHistoryRangeOption(rangeId: HistoryRangeId) {
+  return HISTORY_RANGES.find((range) => range.id === rangeId) ?? HISTORY_RANGES[0];
+}
+
+function getHistoryRange(rangeId: HistoryRangeId) {
   const to = new Date();
+  const option = getHistoryRangeOption(rangeId);
+
+  if ("from" in option) {
+    return { from: option.from, to };
+  }
+
   const from = new Date(to);
-  from.setDate(from.getDate() - (HISTORY_DAYS - 1));
+  from.setDate(from.getDate() - (option.days - 1));
   from.setHours(0, 0, 0, 0);
   return { from, to };
 }
@@ -42,6 +59,7 @@ function getDefaultRange() {
 export default function App() {
   const [token, setToken] = useState(getStoredToken);
   const [tokenInput, setTokenInput] = useState(token);
+  const [historyRange, setHistoryRange] = useState<HistoryRangeId>("31d");
   const [loadState, setLoadState] = useState<LoadState>({ status: "idle" });
 
   useEffect(() => {
@@ -55,7 +73,7 @@ export default function App() {
     async function loadWeights() {
       setLoadState({ status: "loading" });
       try {
-        const range = getDefaultRange();
+        const range = getHistoryRange(historyRange);
         const [latest, history] = await Promise.all([
           getLatestWeight(token, controller.signal),
           getWeightHistory(token, range, controller.signal),
@@ -86,7 +104,7 @@ export default function App() {
     void loadWeights();
 
     return () => controller.abort();
-  }, [token]);
+  }, [token, historyRange]);
 
   function handleSaveToken(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -142,7 +160,12 @@ export default function App() {
       )}
 
       {loadState.status === "loaded" && (
-        <Dashboard latest={loadState.latest} history={loadState.history} />
+        <Dashboard
+          latest={loadState.latest}
+          history={loadState.history}
+          historyRange={historyRange}
+          onHistoryRangeChange={setHistoryRange}
+        />
       )}
     </main>
   );
@@ -189,11 +212,16 @@ function TokenForm({
 function Dashboard({
   latest,
   history,
+  historyRange,
+  onHistoryRangeChange,
 }: {
   latest: WeightEntry;
   history: WeightEntry[];
+  historyRange: HistoryRangeId;
+  onHistoryRangeChange: (range: HistoryRangeId) => void;
 }) {
   const summary = useMemo(() => getSummary(history), [history]);
+  const selectedRange = getHistoryRangeOption(historyRange);
 
   return (
     <div className="dashboard">
@@ -209,7 +237,7 @@ function Dashboard({
           detail="Libra trendvikt"
         />
         <MetricCard
-          label={`${HISTORY_DAYS} dagar`}
+          label={selectedRange.label}
           value={summary.deltaText}
           detail={`${history.length} mätningar`}
           tone={summary.deltaTone}
@@ -220,8 +248,21 @@ function Dashboard({
         <div className="panel-heading">
           <div>
             <p className="eyebrow">Historik</p>
-            <h2>Senaste {HISTORY_DAYS} dagarna</h2>
+            <h2>{selectedRange.id === "all" ? "All historik" : `Senaste ${selectedRange.label}`}</h2>
           </div>
+          <label className="range-control">
+            <span>Intervall</span>
+            <select
+              value={historyRange}
+              onChange={(event) => onHistoryRangeChange(event.target.value as HistoryRangeId)}
+            >
+              {HISTORY_RANGES.map((range) => (
+                <option key={range.id} value={range.id}>
+                  {range.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         {history.length === 0 ? (
           <p className="muted">Inga mätningar hittades för perioden.</p>
