@@ -2,6 +2,11 @@
 
 Read-only web frontend for the Libra Weight Loss app.
 
+This project is unofficial and is not affiliated with, endorsed by, or
+maintained by Libra. The App Store and Google Play badges are official badge
+assets stored locally in `public/badges`; do not redraw, recolor, or otherwise
+modify them.
+
 ## What it does
 
 - Lets the user paste a Libra access token in the browser.
