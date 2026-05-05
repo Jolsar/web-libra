@@ -1,6 +1,6 @@
 # web-libra
 
-Read-only web frontend for the Libra Weight Loss app.
+Read-only web frontend for the Libra Weight Manager app.
 
 This project is unofficial and is not affiliated with, endorsed by, or
 maintained by Libra. The App Store and Google Play badges are official badge
