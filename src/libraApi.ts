@@ -67,10 +67,10 @@ async function request<T>(
 
   if (!response.ok) {
     if (response.status === 401) {
-      throw new LibraApiError("Tokenen godkändes inte av Libra.", 401);
+      throw new LibraApiError("Libra did not accept this token.", 401);
     }
     throw new LibraApiError(
-      text || `Libra svarade med status ${response.status}.`,
+      text || `Libra responded with status ${response.status}.`,
       response.status,
     );
   }
@@ -78,6 +78,6 @@ async function request<T>(
   try {
     return JSON.parse(text) as T;
   } catch {
-    throw new LibraApiError("Libra skickade ett svar som inte kunde läsas.");
+    throw new LibraApiError("Libra returned a response that could not be read.");
   }
 }
