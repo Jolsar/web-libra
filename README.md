@@ -52,3 +52,7 @@ This app is intentionally static. There is no backend service for this app. The
 user's token is only read by frontend JavaScript and only used as an
 `Authorization: Bearer` header when calling Libra's API directly from the
 browser. If a token is accidentally shared outside the app, rotate it in Libra.
+
+## License
+
+MIT
