@@ -15,6 +15,7 @@ const HISTORY_RANGES = [
 ] as const;
 
 type HistoryRangeId = (typeof HISTORY_RANGES)[number]["id"];
+const LIMITED_HISTORY_WINDOW_DAYS = 45;
 
 type LoadState =
   | { status: "idle" }
@@ -54,6 +55,18 @@ function getHistoryRange(rangeId: HistoryRangeId) {
   from.setDate(from.getDate() - (option.days - 1));
   from.setHours(0, 0, 0, 0);
   return { from, to };
+}
+
+function looksLikeLimitedHistory(rangeId: HistoryRangeId, entries: WeightEntry[]) {
+  if (rangeId === "31d" || entries.length === 0) {
+    return false;
+  }
+
+  const oldestEntryTime = new Date(entries[0].date).getTime();
+  const limitedWindowStart = new Date();
+  limitedWindowStart.setDate(limitedWindowStart.getDate() - LIMITED_HISTORY_WINDOW_DAYS);
+
+  return oldestEntryTime > limitedWindowStart.getTime();
 }
 
 export default function App() {
@@ -127,8 +140,15 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <div>
-          <p className="eyebrow">Libra</p>
+          <p className="eyebrow">Webfront till Libra</p>
           <h1>Viktöversikt</h1>
+          <p className="intro">
+            En lokal tokenbaserad vy för{" "}
+            <a href="https://libra-app.eu/" target="_blank" rel="noreferrer">
+              Libra Weight Loss app
+            </a>
+            .
+          </p>
         </div>
         <TokenForm
           tokenInput={tokenInput}
@@ -222,6 +242,7 @@ function Dashboard({
 }) {
   const summary = useMemo(() => getSummary(history), [history]);
   const selectedRange = getHistoryRangeOption(historyRange);
+  const showLimitedHistoryNotice = looksLikeLimitedHistory(historyRange, history);
 
   return (
     <div className="dashboard">
@@ -268,6 +289,12 @@ function Dashboard({
           <p className="muted">Inga mätningar hittades för perioden.</p>
         ) : (
           <>
+            {showLimitedHistoryNotice && (
+              <div className="notice" role="status">
+                Libra API:t returnerade bara data från {formatShortDate(history[0].date)} och framåt för det här intervallet.
+                Om du har äldre mätningar i Libra kan tokenen eller API-accessen vara begränsad till senaste 31 dagarna.
+              </div>
+            )}
             <WeightChart entries={history} />
             <WeightTable entries={history} />
           </>
