@@ -187,11 +187,7 @@ export default function App() {
               target="_blank"
               rel="noreferrer"
             >
-              <span className="store-mark" aria-hidden="true">A</span>
-              <span>
-                <span className="store-kicker">Download on the</span>
-                <span className="store-name">App Store</span>
-              </span>
+              <img src="/badges/app-store.svg" alt="Download on the App Store" />
             </a>
             <a
               className="store-badge"
@@ -199,11 +195,7 @@ export default function App() {
               target="_blank"
               rel="noreferrer"
             >
-              <span className="store-mark" aria-hidden="true">&gt;</span>
-              <span>
-                <span className="store-kicker">Get it on</span>
-                <span className="store-name">Google Play</span>
-              </span>
+              <img src="/badges/google-play.png" alt="Get it on Google Play" />
             </a>
           </div>
         </div>
@@ -489,6 +481,8 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
 }
 
 function WeightTable({ entries }: { entries: WeightEntry[] }) {
+  const hasLogs = entries.some((entry) => entry.log);
+
   return (
     <div className="table-wrap">
       <table>
@@ -497,7 +491,7 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
             <th>Date</th>
             <th>Weight</th>
             <th>Trend</th>
-            <th>Log</th>
+            {hasLogs && <th>Comment</th>}
           </tr>
         </thead>
         <tbody>
@@ -506,7 +500,7 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
               <td>{formatDateTime(entry.date)}</td>
               <td>{formatNumber(entry.weight)} kg</td>
               <td>{formatNumber(entry.weight_trend)} kg</td>
-              <td>{entry.log || "-"}</td>
+              {hasLogs && <td>{entry.log || "-"}</td>}
             </tr>
           ))}
         </tbody>
