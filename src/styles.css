@@ -23,7 +23,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -52,7 +53,8 @@ button.secondary:hover {
   background: #f0eee8;
 }
 
-input {
+input,
+select {
   width: min(42vw, 360px);
   min-width: 220px;
   min-height: 42px;
@@ -64,6 +66,17 @@ input {
 }
 
 input:focus {
+  border-color: #2f6f84;
+  outline: 3px solid rgba(47, 111, 132, 0.18);
+}
+
+select {
+  width: 180px;
+  min-width: 160px;
+  cursor: pointer;
+}
+
+select:focus {
   border-color: #2f6f84;
   outline: 3px solid rgba(47, 111, 132, 0.18);
 }
@@ -210,6 +223,18 @@ h2 {
   margin-bottom: 18px;
 }
 
+.range-control {
+  display: grid;
+  gap: 7px;
+}
+
+.range-control span {
+  color: #65615a;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .chart-wrap {
   display: grid;
   gap: 10px;
@@ -339,7 +364,8 @@ td {
     font-size: 2.4rem;
   }
 
-  input {
+  input,
+  select {
     width: 100%;
     min-width: 0;
   }
@@ -355,5 +381,10 @@ td {
 
   .panel {
     padding: 16px;
+  }
+
+  .panel-heading {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
