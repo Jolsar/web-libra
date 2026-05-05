@@ -182,6 +182,12 @@ h2 {
   color: #65615a;
 }
 
+.privacy-note {
+  max-width: 640px;
+  margin: 10px auto 0;
+  line-height: 1.55;
+}
+
 .status-panel.error {
   border-color: rgba(174, 70, 45, 0.35);
   background: #fff7f4;
@@ -352,6 +358,13 @@ svg {
 
 .table-wrap {
   overflow-x: auto;
+}
+
+.site-footer {
+  margin-top: 28px;
+  color: #65615a;
+  font-size: 0.92rem;
+  text-align: center;
 }
 
 table {
