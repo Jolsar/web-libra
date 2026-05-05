@@ -176,7 +176,7 @@ export default function App() {
           <p className="intro">
             A local token-based view for{" "}
             <a href="https://libra-app.eu/" target="_blank" rel="noreferrer">
-              Libra Weight Loss app
+              Libra Weight Manager
             </a>
             . Your token and Libra data stay in this browser; this site has no backend storage.
           </p>
