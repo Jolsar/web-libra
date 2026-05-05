@@ -150,8 +150,8 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <div>
-          <p className="eyebrow">Web frontend for Libra</p>
-          <h1>Weight overview</h1>
+          <p className="eyebrow">Web Libra</p>
+          <h1>Unofficial web frontend for Libra</h1>
           <p className="intro">
             A local token-based view for{" "}
             <a href="https://libra-app.eu/" target="_blank" rel="noreferrer">
@@ -159,6 +159,24 @@ export default function App() {
             </a>
             . Your token and Libra data stay in this browser; this site has no backend storage.
           </p>
+          <div className="download-links" aria-label="Download Libra app">
+            <a
+              className="store-badge"
+              href="https://apps.apple.com/us/app/libra-weight-manager/id1644353761"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="https://libra-app.eu/images/app_store.svg" alt="Download on the App Store" />
+            </a>
+            <a
+              className="store-badge"
+              href="https://play.google.com/store/apps/details?id=net.cachapa.libra"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="https://libra-app.eu/images/play_store.svg" alt="Get it on Google Play" />
+            </a>
+          </div>
         </div>
         <TokenForm
           tokenInput={tokenInput}
@@ -200,6 +218,10 @@ export default function App() {
           onHistoryRangeChange={setHistoryRange}
         />
       )}
+
+      <footer className="site-footer">
+        Contact: <a href="mailto:web-libra@l91.org">web-libra@l91.org</a>
+      </footer>
     </main>
   );
 }
