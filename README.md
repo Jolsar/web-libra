@@ -5,14 +5,17 @@ Read-only web frontend for the Libra Weight Loss app.
 ## What it does
 
 - Lets the user paste a Libra access token in the browser.
-- Stores the token in `localStorage` under `libra.accessToken`.
+- Can keep the token for the browser session in `sessionStorage` under
+  `libra.sessionAccessToken`.
+- Can save the token in `localStorage` under `libra.accessToken`.
 - Calls `https://api.libra-app.eu` directly from the browser.
 - Shows the latest weight and selectable weight history ranges.
 
-The Libra token is only stored in the user's browser `localStorage` after the
-user saves it. It is not stored in GitHub, Cloudflare environment variables,
-cookies, server logs, or a backend service. Libra data is fetched directly from
-Libra API and processed locally in the browser.
+The Libra token is only stored in the user's browser after the user chooses to
+use or save it. Session tokens use `sessionStorage`, saved tokens use
+`localStorage`, and neither option stores the token in GitHub, Cloudflare
+environment variables, cookies, server logs, or a backend service. Libra data is
+fetched directly from Libra API and processed locally in the browser.
 
 ## Local development
 
