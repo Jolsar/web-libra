@@ -9,8 +9,10 @@ Read-only web frontend for the Libra Weight Loss app.
 - Calls `https://api.libra-app.eu` directly from the browser.
 - Shows the latest weight and selectable weight history ranges.
 
-No Libra token is stored in GitHub, Cloudflare environment variables, cookies,
-server logs, or a backend service.
+The Libra token is only stored in the user's browser `localStorage` after the
+user saves it. It is not stored in GitHub, Cloudflare environment variables,
+cookies, server logs, or a backend service. Libra data is fetched directly from
+Libra API and processed locally in the browser.
 
 ## Local development
 
@@ -43,7 +45,7 @@ requests to Libra.
 
 ## Privacy
 
-This app is intentionally static. The user's token is only read by frontend
-JavaScript and only used as an `Authorization: Bearer` header when calling
-Libra's API. If a token is accidentally shared outside the app, rotate it in
-Libra.
+This app is intentionally static. There is no backend service for this app. The
+user's token is only read by frontend JavaScript and only used as an
+`Authorization: Bearer` header when calling Libra's API directly from the
+browser. If a token is accidentally shared outside the app, rotate it in Libra.
