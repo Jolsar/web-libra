@@ -278,7 +278,12 @@ function TokenForm({
           onChange={(event) => onTokenInputChange(event.target.value)}
         />
         <button type="submit">Save</button>
-        <button className="secondary" type="button" onClick={onUseSessionToken}>
+        <button
+          className="secondary"
+          type="button"
+          title="Use token for this browser session only"
+          onClick={onUseSessionToken}
+        >
           Use session
         </button>
         {hasToken && (
