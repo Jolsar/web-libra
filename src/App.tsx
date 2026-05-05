@@ -187,7 +187,11 @@ export default function App() {
               target="_blank"
               rel="noreferrer"
             >
-              <img src="https://libra-app.eu/images/app_store.svg" alt="Download on the App Store" />
+              <span className="store-mark" aria-hidden="true">A</span>
+              <span>
+                <span className="store-kicker">Download on the</span>
+                <span className="store-name">App Store</span>
+              </span>
             </a>
             <a
               className="store-badge"
@@ -195,7 +199,11 @@ export default function App() {
               target="_blank"
               rel="noreferrer"
             >
-              <img src="https://libra-app.eu/images/play_store.svg" alt="Get it on Google Play" />
+              <span className="store-mark" aria-hidden="true">&gt;</span>
+              <span>
+                <span className="store-kicker">Get it on</span>
+                <span className="store-name">Google Play</span>
+              </span>
             </a>
           </div>
         </div>
