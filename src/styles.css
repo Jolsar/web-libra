@@ -88,11 +88,30 @@ select:focus {
 }
 
 .topbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 400px);
+  align-items: end;
+  gap: 16px 24px;
   padding: 20px 0 28px;
+}
+
+.topbar > div {
+  display: contents;
+}
+
+.topbar .eyebrow,
+.topbar h1 {
+  grid-column: 1 / -1;
+}
+
+.topbar .intro,
+.topbar .download-links {
+  grid-column: 1;
+}
+
+.topbar .token-form {
+  grid-column: 2;
+  grid-row: 3 / span 2;
 }
 
 .eyebrow {
@@ -418,6 +437,7 @@ td {
 
   .topbar {
     align-items: stretch;
+    display: flex;
     flex-direction: column;
   }
 
