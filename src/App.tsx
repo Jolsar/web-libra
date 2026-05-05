@@ -187,7 +187,10 @@ export default function App() {
               target="_blank"
               rel="noreferrer"
             >
-              <img src="/badges/app-store.svg" alt="Download on the App Store" />
+              <img
+                src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                alt="Download on the App Store"
+              />
             </a>
             <a
               className="store-badge"
@@ -195,7 +198,10 @@ export default function App() {
               target="_blank"
               rel="noreferrer"
             >
-              <img src="/badges/google-play.png" alt="Get it on Google Play" />
+              <img
+                src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                alt="Get it on Google Play"
+              />
             </a>
           </div>
         </div>
