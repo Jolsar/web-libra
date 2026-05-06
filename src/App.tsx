@@ -17,6 +17,15 @@ const HISTORY_RANGES = [
 
 type HistoryRangeId = (typeof HISTORY_RANGES)[number]["id"];
 const LIMITED_HISTORY_WINDOW_DAYS = 45;
+const LIBRA_SITE_URL = "https://libra-app.eu/";
+const APP_STORE_URL = "https://apps.apple.com/us/app/libra-weight-manager/id1644353761";
+const APP_STORE_BADGE_URL =
+  "https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg";
+const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=net.cachapa.libra";
+const GOOGLE_PLAY_BADGE_URL =
+  "https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png";
+const SOURCE_CODE_URL = "https://github.com/Jolsar/web-libra";
+const CONTACT_EMAIL = "web-libra@l91.org";
 
 type LoadState =
   | { status: "idle" }
@@ -175,31 +184,31 @@ export default function App() {
           <h1>Unofficial web frontend for Libra</h1>
           <p className="intro">
             A local token-based view for{" "}
-            <a href="https://libra-app.eu/" target="_blank" rel="noreferrer">
+            <a href={LIBRA_SITE_URL} target="_blank" rel="noreferrer">
               Libra Weight Manager
             </a>
             . Your token and Libra data stay in this browser; this site has no backend storage.
           </p>
           <div className="download-links" aria-label="Download Libra app">
             <a
-              className="store-badge"
-              href="https://apps.apple.com/us/app/libra-weight-manager/id1644353761"
+              className="store-badge store-badge--app-store"
+              href={APP_STORE_URL}
               target="_blank"
               rel="noreferrer"
             >
               <img
-                src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                src={APP_STORE_BADGE_URL}
                 alt="Download on the App Store"
               />
             </a>
             <a
-              className="store-badge"
-              href="https://play.google.com/store/apps/details?id=net.cachapa.libra"
+              className="store-badge store-badge--google-play"
+              href={GOOGLE_PLAY_URL}
               target="_blank"
               rel="noreferrer"
             >
               <img
-                src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                src={GOOGLE_PLAY_BADGE_URL}
                 alt="Get it on Google Play"
               />
             </a>
@@ -248,9 +257,9 @@ export default function App() {
       )}
 
       <footer className="site-footer">
-        Contact: <a href="mailto:web-libra@l91.org">web-libra@l91.org</a>
+        Contact: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
         <span aria-hidden="true"> | </span>
-        <a href="https://github.com/Jolsar/web-libra" target="_blank" rel="noreferrer">
+        <a href={SOURCE_CODE_URL} target="_blank" rel="noreferrer">
           Source code on GitHub
         </a>
       </footer>
@@ -490,9 +499,7 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
               onFocus={() => setActivePoint(index)}
               onMouseEnter={() => setActivePoint(index)}
               onMouseLeave={() => setActivePoint(null)}
-            >
-              <title>{`${formatNumber(point.weight)} kg, ${formatDateTime(point.date)}`}</title>
-            </circle>
+            />
           ))}
           <text className="date-label" x={left} y={height - 12}>
             {formatShortDate(points[0].date)}
