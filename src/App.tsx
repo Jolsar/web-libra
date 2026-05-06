@@ -398,6 +398,7 @@ function MetricCard({
 }
 
 function WeightChart({ entries }: { entries: WeightEntry[] }) {
+  const [activePoint, setActivePoint] = useState<number | null>(null);
   const points = entries.map((entry) => ({
     date: entry.date,
     weight: entry.weight,
@@ -442,42 +443,71 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
     .map((point, index) => `${index === 0 ? "M" : "L"} ${x(index)} ${y(point.trend)}`)
     .join(" ");
   const ticks = [domainMin, (domainMin + domainMax) / 2, domainMax];
+  const activeIndex = activePoint !== null && activePoint < points.length ? activePoint : null;
+  const tooltip =
+    activeIndex === null
+      ? null
+      : {
+          point: points[activeIndex],
+          left: (x(activeIndex) / width) * 100,
+          top: (y(points[activeIndex].weight) / height) * 100,
+        };
 
   return (
     <div className="chart-wrap">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Weight and trend">
-        {ticks.map((tick) => (
-          <g key={tick}>
-            <line
-              className="grid-line"
-              x1={left}
-              x2={width - right}
-              y1={y(tick)}
-              y2={y(tick)}
-            />
-            <text className="axis-label" x={12} y={y(tick) + 5}>
-              {formatNumber(tick)}
-            </text>
-          </g>
-        ))}
-        <path className="weight-line" d={weightPath} />
-        <path className="trend-line" d={trendPath} />
-        {points.map((point, index) => (
-          <circle
-            key={`${point.date}-${point.weight}`}
-            className="weight-dot"
-            cx={x(index)}
-            cy={y(point.weight)}
-            r="4"
-          />
-        ))}
-        <text className="date-label" x={left} y={height - 12}>
-          {formatShortDate(points[0].date)}
-        </text>
-        <text className="date-label end" x={width - right} y={height - 12}>
-          {formatShortDate(points[points.length - 1].date)}
-        </text>
-      </svg>
+      <div className="chart-area">
+        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Weight and trend">
+          {ticks.map((tick) => (
+            <g key={tick}>
+              <line
+                className="grid-line"
+                x1={left}
+                x2={width - right}
+                y1={y(tick)}
+                y2={y(tick)}
+              />
+              <text className="axis-label" x={12} y={y(tick) + 5}>
+                {formatNumber(tick)}
+              </text>
+            </g>
+          ))}
+          <path className="weight-line" d={weightPath} />
+          <path className="trend-line" d={trendPath} />
+          {points.map((point, index) => (
+            <circle
+              key={`${point.date}-${point.weight}`}
+              className="weight-dot"
+              cx={x(index)}
+              cy={y(point.weight)}
+              r="4"
+              tabIndex={0}
+              aria-label={`${formatNumber(point.weight)} kg on ${formatDateTime(point.date)}`}
+              onBlur={() => setActivePoint(null)}
+              onFocus={() => setActivePoint(index)}
+              onMouseEnter={() => setActivePoint(index)}
+              onMouseLeave={() => setActivePoint(null)}
+            >
+              <title>{`${formatNumber(point.weight)} kg, ${formatDateTime(point.date)}`}</title>
+            </circle>
+          ))}
+          <text className="date-label" x={left} y={height - 12}>
+            {formatShortDate(points[0].date)}
+          </text>
+          <text className="date-label end" x={width - right} y={height - 12}>
+            {formatShortDate(points[points.length - 1].date)}
+          </text>
+        </svg>
+        {tooltip && (
+          <div
+            className="chart-tooltip"
+            role="tooltip"
+            style={{ left: `${tooltip.left}%`, top: `${tooltip.top}%` }}
+          >
+            <strong>{formatNumber(tooltip.point.weight)} kg</strong>
+            <span>{formatDateTime(tooltip.point.date)}</span>
+          </div>
+        )}
+      </div>
       <div className="legend">
         <span><i className="legend-weight" /> Weight</span>
         <span><i className="legend-trend" /> Trend</span>
