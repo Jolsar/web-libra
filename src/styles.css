@@ -165,7 +165,7 @@ h1 {
   height: 40px;
 }
 
-.store-badge:last-of-type img {
+.store-badge--google-play img {
   height: 60px;
 }
 
@@ -326,7 +326,7 @@ h2 {
   position: relative;
 }
 
-svg {
+.chart-area svg {
   width: 100%;
   height: auto;
   overflow: visible;
