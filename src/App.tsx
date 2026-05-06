@@ -249,6 +249,10 @@ export default function App() {
 
       <footer className="site-footer">
         Contact: <a href="mailto:web-libra@l91.org">web-libra@l91.org</a>
+        <span aria-hidden="true"> | </span>
+        <a href="https://github.com/Jolsar/web-libra" target="_blank" rel="noreferrer">
+          Source code on GitHub
+        </a>
       </footer>
     </main>
   );
