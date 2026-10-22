@@ -347,6 +347,7 @@ h2 {
   text-anchor: end;
 }
 
+.measurement-line,
 .weight-line,
 .trend-line {
   fill: none;
@@ -354,6 +355,7 @@ h2 {
   stroke-linejoin: round;
 }
 
+.measurement-line,
 .weight-line {
   stroke: #2f6f84;
   stroke-width: 4;
@@ -365,12 +367,15 @@ h2 {
   stroke-dasharray: 8 8;
 }
 
+.measurement-dot,
 .weight-dot {
   fill: #ffffff;
   stroke: #2f6f84;
   stroke-width: 3;
 }
 
+.measurement-dot:hover,
+.measurement-dot:focus,
 .weight-dot:hover,
 .weight-dot:focus {
   fill: #2f6f84;
@@ -434,6 +439,7 @@ h2 {
   border-radius: 99px;
 }
 
+.legend-measurement,
 .legend-weight {
   background: #2f6f84;
 }
@@ -529,3 +535,4 @@ td {
     flex-direction: column;
   }
 }
+
