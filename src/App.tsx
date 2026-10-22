@@ -327,6 +327,15 @@ function Dashboard({
   onHistoryRangeChange: (range: HistoryRangeId) => void;
 }) {
   const summary = useMemo(() => getSummary(history), [history]);
+  const bodyFatPoints = useMemo(
+    () =>
+      history.flatMap((entry) =>
+        entry.body_fat === null
+          ? []
+          : [{ date: entry.date, value: entry.body_fat, trend: entry.body_fat_trend }],
+      ),
+    [history],
+  );
   const selectedRange = getHistoryRangeOption(historyRange);
   const showLimitedHistoryNotice = looksLikeLimitedHistory(historyRange, history);
 
@@ -381,11 +390,30 @@ function Dashboard({
                 If you have older entries in Libra, this token or API access may be limited to the latest 31 days.
               </div>
             )}
-            <WeightChart entries={history} />
+            <MeasurementChart
+              metricLabel="Weight"
+              points={history.map((entry) => ({
+                date: entry.date,
+                value: entry.weight,
+                trend: entry.weight_trend,
+              }))}
+            />
             <WeightTable entries={history} />
           </>
         )}
       </section>
+
+      {bodyFatPoints.length > 0 && (
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">Body composition</p>
+              <h2>Body fat</h2>
+            </div>
+          </div>
+          <MeasurementChart metricLabel="Body fat" points={bodyFatPoints} />
+        </section>
+      )}
     </div>
   );
 }
@@ -410,23 +438,32 @@ function MetricCard({
   );
 }
 
-function WeightChart({ entries }: { entries: WeightEntry[] }) {
+type ChartPoint = {
+  date: string;
+  value: number;
+  trend: number | null;
+};
+
+function MeasurementChart({
+  metricLabel,
+  points,
+}: {
+  metricLabel: string;
+  points: ChartPoint[];
+}) {
   const [activePoint, setActivePoint] = useState<number | null>(null);
-  const points = entries.map((entry) => ({
-    date: entry.date,
-    weight: entry.weight,
-    trend: entry.weight_trend,
-  }));
 
   if (points.length < 2) {
     return (
       <div className="chart-placeholder">
-        At least two measurements are needed for a chart.
+        At least two {metricLabel.toLowerCase()} measurements are needed for a chart.
       </div>
     );
   }
 
-  const values = points.flatMap((point) => [point.weight, point.trend]);
+  const values = points.flatMap((point) =>
+    point.trend === null ? [point.value] : [point.value, point.trend],
+  );
   const min = Math.min(...values);
   const max = Math.max(...values);
   const padding = Math.max((max - min) * 0.18, 0.4);
@@ -449,11 +486,21 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
     return top + plotHeight - ((value - domainMin) / (domainMax - domainMin)) * plotHeight;
   }
 
-  const weightPath = points
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${x(index)} ${y(point.weight)}`)
+  const measurementPath = points
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${x(index)} ${y(point.value)}`)
     .join(" ");
+  let hasPreviousTrend = false;
   const trendPath = points
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${x(index)} ${y(point.trend)}`)
+    .flatMap((point, index) => {
+      if (point.trend === null) {
+        hasPreviousTrend = false;
+        return [];
+      }
+
+      const command = `${hasPreviousTrend ? "L" : "M"} ${x(index)} ${y(point.trend)}`;
+      hasPreviousTrend = true;
+      return [command];
+    })
     .join(" ");
   const ticks = [domainMin, (domainMin + domainMax) / 2, domainMax];
   const activeIndex = activePoint !== null && activePoint < points.length ? activePoint : null;
@@ -463,13 +510,13 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
       : {
           point: points[activeIndex],
           left: (x(activeIndex) / width) * 100,
-          top: (y(points[activeIndex].weight) / height) * 100,
+          top: (y(points[activeIndex].value) / height) * 100,
         };
 
   return (
     <div className="chart-wrap">
       <div className="chart-area">
-        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Weight and trend">
+        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${metricLabel} and trend`}>
           {ticks.map((tick) => (
             <g key={tick}>
               <line
@@ -484,17 +531,17 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
               </text>
             </g>
           ))}
-          <path className="weight-line" d={weightPath} />
+          <path className="measurement-line" d={measurementPath} />
           <path className="trend-line" d={trendPath} />
           {points.map((point, index) => (
             <circle
-              key={`${point.date}-${point.weight}`}
-              className="weight-dot"
+              key={`${point.date}-${point.value}`}
+              className="measurement-dot"
               cx={x(index)}
-              cy={y(point.weight)}
+              cy={y(point.value)}
               r="4"
               tabIndex={0}
-              aria-label={`${formatNumber(point.weight)} kg on ${formatDateTime(point.date)}`}
+              aria-label={`${formatNumber(point.value)} kg ${metricLabel.toLowerCase()} on ${formatDateTime(point.date)}`}
               onBlur={() => setActivePoint(null)}
               onFocus={() => setActivePoint(index)}
               onMouseEnter={() => setActivePoint(index)}
@@ -514,13 +561,13 @@ function WeightChart({ entries }: { entries: WeightEntry[] }) {
             role="tooltip"
             style={{ left: `${tooltip.left}%`, top: `${tooltip.top}%` }}
           >
-            <strong>{formatNumber(tooltip.point.weight)} kg</strong>
+            <strong>{formatNumber(tooltip.point.value)} kg</strong>
             <span>{formatDateTime(tooltip.point.date)}</span>
           </div>
         )}
       </div>
       <div className="legend">
-        <span><i className="legend-weight" /> Weight</span>
+        <span><i className="legend-measurement" /> {metricLabel}</span>
         <span><i className="legend-trend" /> Trend</span>
       </div>
     </div>
@@ -596,3 +643,4 @@ function formatShortDate(value: string) {
     month: "short",
   }).format(new Date(value));
 }
+
