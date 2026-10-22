@@ -14,7 +14,7 @@ modify them.
   `libra.sessionAccessToken`.
 - Can save the token in `localStorage` under `libra.accessToken`.
 - Calls `https://api.libra-app.eu` directly from the browser.
-- Shows the latest weight and selectable weight history ranges.
+- Shows the latest weight, selectable weight history ranges, and a body-fat chart when Libra has body-fat measurements.
 
 The Libra token is only stored in the user's browser after the user chooses to
 use or save it. Session tokens use `sessionStorage`, saved tokens use
@@ -61,3 +61,4 @@ browser. If a token is accidentally shared outside the app, rotate it in Libra.
 ## License
 
 MIT
+
