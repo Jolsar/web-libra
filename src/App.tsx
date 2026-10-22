@@ -392,6 +392,7 @@ function Dashboard({
             )}
             <MeasurementChart
               metricLabel="Weight"
+              unit="kg"
               points={history.map((entry) => ({
                 date: entry.date,
                 value: entry.weight,
@@ -411,7 +412,7 @@ function Dashboard({
               <h2>Body fat</h2>
             </div>
           </div>
-          <MeasurementChart metricLabel="Body fat" points={bodyFatPoints} />
+          <MeasurementChart metricLabel="Body fat" unit="%" points={bodyFatPoints} />
         </section>
       )}
     </div>
@@ -446,9 +447,11 @@ type ChartPoint = {
 
 function MeasurementChart({
   metricLabel,
+  unit,
   points,
 }: {
   metricLabel: string;
+  unit: string;
   points: ChartPoint[];
 }) {
   const [activePoint, setActivePoint] = useState<number | null>(null);
@@ -543,9 +546,9 @@ function MeasurementChart({
               className="measurement-dot"
               cx={x(index)}
               cy={y(point.value)}
-              r="4"
+              r={points.length === 1 ? 7 : 4}
               tabIndex={0}
-              aria-label={`${formatNumber(point.value)} kg ${metricLabel.toLowerCase()} on ${formatDateTime(point.date)}`}
+              aria-label={`${formatNumber(point.value)}${unit} ${metricLabel.toLowerCase()} on ${formatDateTime(point.date)}`}
               onBlur={() => setActivePoint(null)}
               onFocus={() => setActivePoint(index)}
               onMouseEnter={() => setActivePoint(index)}
@@ -565,7 +568,7 @@ function MeasurementChart({
             role="tooltip"
             style={{ left: `${tooltip.left}%`, top: `${tooltip.top}%` }}
           >
-            <strong>{formatNumber(tooltip.point.value)} kg</strong>
+            <strong>{formatNumber(tooltip.point.value)}{unit}</strong>
             <span>{formatDateTime(tooltip.point.date)}</span>
           </div>
         )}
@@ -590,7 +593,7 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
             <th>Date</th>
             <th>Weight</th>
             <th>Trend</th>
-            {hasBodyFat && <th>Body fat</th>}
+            {hasBodyFat && <th>Body fat (%)</th>}
             {hasLogs && <th>Comment</th>}
           </tr>
         </thead>
@@ -600,7 +603,7 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
               <td>{formatDateTime(entry.date)}</td>
               <td>{formatNumber(entry.weight)} kg</td>
               <td>{formatNumber(entry.weight_trend)} kg</td>
-              {hasBodyFat && <td>{entry.body_fat === null ? "-" : `${formatNumber(entry.body_fat)} kg`}</td>}
+              {hasBodyFat && <td>{entry.body_fat === null ? "-" : `${formatNumber(entry.body_fat)}%`}</td>}
               {hasLogs && <td>{entry.log || "-"}</td>}
             </tr>
           ))}
