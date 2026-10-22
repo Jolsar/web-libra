@@ -330,9 +330,16 @@ function Dashboard({
   const bodyFatPoints = useMemo(
     () =>
       history.flatMap((entry) =>
-        entry.body_fat === null
+        entry.body_fat === null || entry.weight <= 0
           ? []
-          : [{ date: entry.date, value: entry.body_fat, trend: entry.body_fat_trend }],
+          : [{
+              date: entry.date,
+              value: getBodyFatPercentage(entry.body_fat, entry.weight),
+              trend:
+                entry.body_fat_trend === null || entry.weight_trend <= 0
+                  ? null
+                  : getBodyFatPercentage(entry.body_fat_trend, entry.weight_trend),
+            }],
       ),
     [history],
   );
@@ -603,7 +610,13 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
               <td>{formatDateTime(entry.date)}</td>
               <td>{formatNumber(entry.weight)} kg</td>
               <td>{formatNumber(entry.weight_trend)} kg</td>
-              {hasBodyFat && <td>{entry.body_fat === null ? "-" : `${formatNumber(entry.body_fat)}%`}</td>}
+              {hasBodyFat && (
+                <td>
+                  {entry.body_fat === null || entry.weight <= 0
+                    ? "-"
+                    : `${formatNumber(getBodyFatPercentage(entry.body_fat, entry.weight))}%`}
+                </td>
+              )}
               {hasLogs && <td>{entry.log || "-"}</td>}
             </tr>
           ))}
@@ -627,6 +640,10 @@ function getSummary(entries: WeightEntry[]) {
     deltaText: `${sign}${formatNumber(delta)} kg`,
     deltaTone: delta > 0 ? ("up" as const) : delta < 0 ? ("down" as const) : ("neutral" as const),
   };
+}
+
+function getBodyFatPercentage(bodyFat: number, weight: number) {
+  return (bodyFat / weight) * 100;
 }
 
 function formatNumber(value: number) {
@@ -653,4 +670,5 @@ function formatShortDate(value: string) {
     month: "short",
   }).format(new Date(value));
 }
+
 
