@@ -572,7 +572,7 @@ function HistoryChart({
               className="body-fat-dot"
               cx={x(point.index)}
               cy={bodyFatY(point.value)}
-              r={bodyFatPoints.length === 1 ? 7 : 4}
+              r="4"
               tabIndex={0}
               aria-label={`${formatNumber(point.value)}% body fat on ${formatDateTime(point.date)}`}
               onBlur={() => setActivePoint(null)}
