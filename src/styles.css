@@ -347,6 +347,10 @@ h2 {
   text-anchor: end;
 }
 
+.axis-label.end {
+  text-anchor: end;
+}
+
 .measurement-line,
 .weight-line,
 .trend-line {
@@ -374,11 +378,46 @@ h2 {
   stroke-width: 3;
 }
 
+.body-fat-line,
+.body-fat-trend-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.body-fat-line {
+  stroke: #1f6f4a;
+  stroke-width: 4;
+}
+
+.body-fat-trend-line {
+  stroke: #4d9170;
+  stroke-width: 3;
+  stroke-dasharray: 8 8;
+}
+
+.body-fat-axis-tick {
+  stroke: #1f6f4a;
+  stroke-width: 1;
+}
+
 .measurement-dot:hover,
 .measurement-dot:focus,
 .weight-dot:hover,
 .weight-dot:focus {
   fill: #2f6f84;
+  outline: none;
+}
+
+.body-fat-dot {
+  fill: #ffffff;
+  stroke: #1f6f4a;
+  stroke-width: 3;
+}
+
+.body-fat-dot:hover,
+.body-fat-dot:focus {
+  fill: #1f6f4a;
   outline: none;
 }
 
@@ -446,6 +485,14 @@ h2 {
 
 .legend-trend {
   background: #c26833;
+}
+
+.legend-body-fat {
+  background: #1f6f4a;
+}
+
+.legend-body-fat-trend {
+  background: #4d9170;
 }
 
 .chart-placeholder {
