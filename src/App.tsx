@@ -453,10 +453,10 @@ function MeasurementChart({
 }) {
   const [activePoint, setActivePoint] = useState<number | null>(null);
 
-  if (points.length < 2) {
+  if (points.length === 0) {
     return (
       <div className="chart-placeholder">
-        At least two {metricLabel.toLowerCase()} measurements are needed for a chart.
+        No {metricLabel.toLowerCase()} measurements are available for this range.
       </div>
     );
   }
@@ -479,6 +479,10 @@ function MeasurementChart({
   const plotHeight = height - top - bottom;
 
   function x(index: number) {
+    if (points.length === 1) {
+      return left + plotWidth / 2;
+    }
+
     return left + (plotWidth * index) / (points.length - 1);
   }
 
@@ -576,6 +580,7 @@ function MeasurementChart({
 
 function WeightTable({ entries }: { entries: WeightEntry[] }) {
   const hasLogs = entries.some((entry) => entry.log);
+  const hasBodyFat = entries.some((entry) => entry.body_fat !== null);
 
   return (
     <div className="table-wrap">
@@ -585,6 +590,7 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
             <th>Date</th>
             <th>Weight</th>
             <th>Trend</th>
+            {hasBodyFat && <th>Body fat</th>}
             {hasLogs && <th>Comment</th>}
           </tr>
         </thead>
@@ -594,6 +600,7 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
               <td>{formatDateTime(entry.date)}</td>
               <td>{formatNumber(entry.weight)} kg</td>
               <td>{formatNumber(entry.weight_trend)} kg</td>
+              {hasBodyFat && <td>{entry.body_fat === null ? "-" : `${formatNumber(entry.body_fat)} kg`}</td>}
               {hasLogs && <td>{entry.log || "-"}</td>}
             </tr>
           ))}
