@@ -329,11 +329,12 @@ function Dashboard({
   const summary = useMemo(() => getSummary(history), [history]);
   const bodyFatPoints = useMemo(
     () =>
-      history.flatMap((entry) =>
+      history.flatMap((entry, index) =>
         entry.body_fat === null || entry.weight <= 0
           ? []
           : [{
               date: entry.date,
+              index,
               value: getBodyFatPercentage(entry.body_fat, entry.weight),
               trend:
                 entry.body_fat_trend === null || entry.weight_trend <= 0
@@ -397,31 +398,19 @@ function Dashboard({
                 If you have older entries in Libra, this token or API access may be limited to the latest 31 days.
               </div>
             )}
-            <MeasurementChart
-              metricLabel="Weight"
-              unit="kg"
-              points={history.map((entry) => ({
+            <HistoryChart
+              weightPoints={history.map((entry) => ({
                 date: entry.date,
                 value: entry.weight,
                 trend: entry.weight_trend,
               }))}
+              bodyFatPoints={bodyFatPoints}
             />
             <WeightTable entries={history} />
           </>
         )}
       </section>
 
-      {bodyFatPoints.length > 0 && (
-        <section className="panel">
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Body composition</p>
-              <h2>Body fat</h2>
-            </div>
-          </div>
-          <MeasurementChart metricLabel="Body fat" unit="%" points={bodyFatPoints} />
-        </section>
-      )}
     </div>
   );
 }
@@ -452,140 +441,195 @@ type ChartPoint = {
   trend: number | null;
 };
 
-function MeasurementChart({
-  metricLabel,
-  unit,
-  points,
-}: {
-  metricLabel: string;
-  unit: string;
-  points: ChartPoint[];
-}) {
-  const [activePoint, setActivePoint] = useState<number | null>(null);
+type IndexedChartPoint = ChartPoint & {
+  index: number;
+};
 
-  if (points.length === 0) {
-    return (
-      <div className="chart-placeholder">
-        No {metricLabel.toLowerCase()} measurements are available for this range.
-      </div>
-    );
+type ActiveChartPoint = {
+  date: string;
+  label: string;
+  left: number;
+  top: number;
+  unit: string;
+  value: number;
+};
+
+function HistoryChart({
+  weightPoints,
+  bodyFatPoints,
+}: {
+  weightPoints: ChartPoint[];
+  bodyFatPoints: IndexedChartPoint[];
+}) {
+  const [activePoint, setActivePoint] = useState<ActiveChartPoint | null>(null);
+
+  if (weightPoints.length === 0) {
+    return <div className="chart-placeholder">No measurements are available for this range.</div>;
   }
 
-  const values = points.flatMap((point) =>
+  const weightValues = weightPoints.flatMap((point) =>
     point.trend === null ? [point.value] : [point.value, point.trend],
   );
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const padding = Math.max((max - min) * 0.18, 0.4);
-  const domainMin = min - padding;
-  const domainMax = max + padding;
+  const weightMin = Math.min(...weightValues);
+  const weightMax = Math.max(...weightValues);
+  const weightPadding = Math.max((weightMax - weightMin) * 0.18, 0.4);
+  const weightDomainMin = weightMin - weightPadding;
+  const weightDomainMax = weightMax + weightPadding;
+  const latestBodyFat = bodyFatPoints[bodyFatPoints.length - 1]?.value;
+  const bodyFatDomainMin = latestBodyFat === undefined ? 0 : Math.max(0, latestBodyFat - 5);
+  const bodyFatDomainMax = latestBodyFat === undefined ? 10 : latestBodyFat + 5;
   const width = 960;
   const height = 320;
   const left = 54;
-  const right = 24;
+  const right = 64;
   const top = 24;
   const bottom = 42;
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
 
   function x(index: number) {
-    if (points.length === 1) {
+    if (weightPoints.length === 1) {
       return left + plotWidth / 2;
     }
 
-    return left + (plotWidth * index) / (points.length - 1);
+    return left + (plotWidth * index) / (weightPoints.length - 1);
   }
 
-  function y(value: number) {
-    return top + plotHeight - ((value - domainMin) / (domainMax - domainMin)) * plotHeight;
+  function weightY(value: number) {
+    return top + plotHeight - ((value - weightDomainMin) / (weightDomainMax - weightDomainMin)) * plotHeight;
   }
 
-  const measurementPath = points
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${x(index)} ${y(point.value)}`)
-    .join(" ");
-  let hasPreviousTrend = false;
-  const trendPath = points
-    .flatMap((point, index) => {
-      if (point.trend === null) {
-        hasPreviousTrend = false;
-        return [];
-      }
+  function bodyFatY(value: number) {
+    return top + plotHeight - ((value - bodyFatDomainMin) / (bodyFatDomainMax - bodyFatDomainMin)) * plotHeight;
+  }
 
-      const command = `${hasPreviousTrend ? "L" : "M"} ${x(index)} ${y(point.trend)}`;
-      hasPreviousTrend = true;
-      return [command];
-    })
-    .join(" ");
-  const ticks = [domainMin, (domainMin + domainMax) / 2, domainMax];
-  const activeIndex = activePoint !== null && activePoint < points.length ? activePoint : null;
-  const tooltip =
-    activeIndex === null
-      ? null
-      : {
-          point: points[activeIndex],
-          left: (x(activeIndex) / width) * 100,
-          top: (y(points[activeIndex].value) / height) * 100,
-        };
+  const weightPath = createChartPath(weightPoints, (_, index) => x(index), weightY, (point) => point.value);
+  const weightTrendPath = createChartPath(weightPoints, (_, index) => x(index), weightY, (point) => point.trend);
+  const bodyFatPath = createChartPath(bodyFatPoints, (point) => x(point.index), bodyFatY, (point) => point.value);
+  const bodyFatTrendPath = createChartPath(bodyFatPoints, (point) => x(point.index), bodyFatY, (point) => point.trend);
+  const weightTicks = [weightDomainMin, (weightDomainMin + weightDomainMax) / 2, weightDomainMax];
+  const bodyFatTicks = [bodyFatDomainMin, latestBodyFat ?? 5, bodyFatDomainMax];
+
+  function activatePoint(point: ChartPoint, label: string, unit: string, pointX: number, pointY: number) {
+    setActivePoint({
+      date: point.date,
+      label,
+      left: (pointX / width) * 100,
+      top: (pointY / height) * 100,
+      unit,
+      value: point.value,
+    });
+  }
 
   return (
     <div className="chart-wrap">
       <div className="chart-area">
-        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${metricLabel} and trend`}>
-          {ticks.map((tick) => (
+        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Weight and body fat history">
+          {weightTicks.map((tick) => (
             <g key={tick}>
               <line
                 className="grid-line"
                 x1={left}
                 x2={width - right}
-                y1={y(tick)}
-                y2={y(tick)}
+                y1={weightY(tick)}
+                y2={weightY(tick)}
               />
-              <text className="axis-label" x={12} y={y(tick) + 5}>
+              <text className="axis-label" x={12} y={weightY(tick) + 5}>
                 {formatNumber(tick)}
               </text>
             </g>
           ))}
-          <path className="measurement-line" d={measurementPath} />
-          <path className="trend-line" d={trendPath} />
-          {points.map((point, index) => (
+          {bodyFatPoints.length > 0 && bodyFatTicks.map((tick) => (
+            <g key={tick}>
+              <line className="body-fat-axis-tick" x1={width - right} x2={width - right + 6} y1={bodyFatY(tick)} y2={bodyFatY(tick)} />
+              <text className="axis-label end" x={width - 8} y={bodyFatY(tick) + 5}>
+                {formatNumber(tick)}%
+              </text>
+            </g>
+          ))}
+          <path className="measurement-line" d={weightPath} />
+          <path className="trend-line" d={weightTrendPath} />
+          {bodyFatPoints.length > 0 && <path className="body-fat-line" d={bodyFatPath} />}
+          {bodyFatPoints.length > 0 && <path className="body-fat-trend-line" d={bodyFatTrendPath} />}
+          {weightPoints.map((point, index) => (
             <circle
               key={`${point.date}-${point.value}`}
               className="measurement-dot"
               cx={x(index)}
-              cy={y(point.value)}
-              r={points.length === 1 ? 7 : 4}
+              cy={weightY(point.value)}
+              r="4"
               tabIndex={0}
-              aria-label={`${formatNumber(point.value)}${unit} ${metricLabel.toLowerCase()} on ${formatDateTime(point.date)}`}
+              aria-label={`${formatNumber(point.value)} kg weight on ${formatDateTime(point.date)}`}
               onBlur={() => setActivePoint(null)}
-              onFocus={() => setActivePoint(index)}
-              onMouseEnter={() => setActivePoint(index)}
+              onFocus={() => activatePoint(point, "Weight", "kg", x(index), weightY(point.value))}
+              onMouseEnter={() => activatePoint(point, "Weight", "kg", x(index), weightY(point.value))}
+              onMouseLeave={() => setActivePoint(null)}
+            />
+          ))}
+          {bodyFatPoints.map((point) => (
+            <circle
+              key={`${point.date}-${point.value}`}
+              className="body-fat-dot"
+              cx={x(point.index)}
+              cy={bodyFatY(point.value)}
+              r={bodyFatPoints.length === 1 ? 7 : 4}
+              tabIndex={0}
+              aria-label={`${formatNumber(point.value)}% body fat on ${formatDateTime(point.date)}`}
+              onBlur={() => setActivePoint(null)}
+              onFocus={() => activatePoint(point, "Body fat", "%", x(point.index), bodyFatY(point.value))}
+              onMouseEnter={() => activatePoint(point, "Body fat", "%", x(point.index), bodyFatY(point.value))}
               onMouseLeave={() => setActivePoint(null)}
             />
           ))}
           <text className="date-label" x={left} y={height - 12}>
-            {formatShortDate(points[0].date)}
+            {formatShortDate(weightPoints[0].date)}
           </text>
           <text className="date-label end" x={width - right} y={height - 12}>
-            {formatShortDate(points[points.length - 1].date)}
+            {formatShortDate(weightPoints[weightPoints.length - 1].date)}
           </text>
         </svg>
-        {tooltip && (
+        {activePoint && (
           <div
             className="chart-tooltip"
             role="tooltip"
-            style={{ left: `${tooltip.left}%`, top: `${tooltip.top}%` }}
+            style={{ left: `${activePoint.left}%`, top: `${activePoint.top}%` }}
           >
-            <strong>{formatNumber(tooltip.point.value)}{unit}</strong>
-            <span>{formatDateTime(tooltip.point.date)}</span>
+            <strong>{activePoint.label}: {formatNumber(activePoint.value)}{activePoint.unit}</strong>
+            <span>{formatDateTime(activePoint.date)}</span>
           </div>
         )}
       </div>
       <div className="legend">
-        <span><i className="legend-measurement" /> {metricLabel}</span>
-        <span><i className="legend-trend" /> Trend</span>
+        <span><i className="legend-measurement" /> Weight</span>
+        <span><i className="legend-trend" /> Weight trend</span>
+        {bodyFatPoints.length > 0 && <span><i className="legend-body-fat" /> Body fat</span>}
+        {bodyFatPoints.length > 0 && <span><i className="legend-body-fat-trend" /> Body fat trend</span>}
       </div>
     </div>
   );
+}
+
+function createChartPath<T extends ChartPoint>(
+  points: T[],
+  getX: (point: T, index: number) => number,
+  getY: (value: number) => number,
+  getValue: (point: T) => number | null,
+) {
+  let hasPreviousPoint = false;
+
+  return points
+    .flatMap((point, index) => {
+      const value = getValue(point);
+      if (value === null) {
+        hasPreviousPoint = false;
+        return [];
+      }
+
+      const command = `${hasPreviousPoint ? "L" : "M"} ${getX(point, index)} ${getY(value)}`;
+      hasPreviousPoint = true;
+      return [command];
+    })
+    .join(" ");
 }
 
 function WeightTable({ entries }: { entries: WeightEntry[] }) {
@@ -670,5 +714,4 @@ function formatShortDate(value: string) {
     month: "short",
   }).format(new Date(value));
 }
-
 
