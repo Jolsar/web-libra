@@ -274,6 +274,20 @@ h2 {
   line-height: 1;
 }
 
+.metric-values {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metric-card strong.metric-secondary {
+  color: #1f6f4a;
+  font-size: 1rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .metric-card.up strong {
   color: #9a3a28;
 }
