@@ -350,16 +350,19 @@ function Dashboard({
         <MetricCard
           label="Latest weight"
           value={`${formatNumber(latest.weight)} kg`}
+          secondaryValue={formatBodyFatMetric(latest.body_fat)}
           detail={formatDateTime(latest.date)}
         />
         <MetricCard
           label="Trend"
           value={`${formatNumber(latest.weight_trend)} kg`}
+          secondaryValue={formatBodyFatMetric(latest.body_fat_trend)}
           detail="Libra trend weight"
         />
         <MetricCard
           label={selectedRange.label}
           value={summary.deltaText}
+          secondaryValue={summary.bodyFatDeltaText}
           detail={`${history.length} measurements`}
           tone={summary.deltaTone}
         />
@@ -415,18 +418,23 @@ function Dashboard({
 function MetricCard({
   label,
   value,
+  secondaryValue,
   detail,
   tone = "neutral",
 }: {
   label: string;
   value: string;
+  secondaryValue?: string;
   detail: string;
   tone?: "neutral" | "up" | "down";
 }) {
   return (
     <article className={`metric-card ${tone}`}>
       <span>{label}</span>
-      <strong>{value}</strong>
+      <div className="metric-values">
+        <strong>{value}</strong>
+        {secondaryValue && <strong className="metric-secondary">{secondaryValue}</strong>}
+      </div>
       <small>{detail}</small>
     </article>
   );
@@ -677,8 +685,20 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
 }
 
 function getSummary(entries: WeightEntry[]) {
+  const bodyFatTrends = entries.flatMap((entry) =>
+    entry.body_fat_trend === null ? [] : [entry.body_fat_trend],
+  );
+  const bodyFatDelta =
+    bodyFatTrends.length < 2
+      ? null
+      : bodyFatTrends[bodyFatTrends.length - 1] - bodyFatTrends[0];
+
   if (entries.length < 2) {
-    return { deltaText: "-", deltaTone: "neutral" as const };
+    return {
+      deltaText: "-",
+      deltaTone: "neutral" as const,
+      bodyFatDeltaText: formatBodyFatDelta(bodyFatDelta),
+    };
   }
 
   const first = entries[0].weight_trend;
@@ -689,7 +709,20 @@ function getSummary(entries: WeightEntry[]) {
   return {
     deltaText: `${sign}${formatNumber(delta)} kg`,
     deltaTone: delta > 0 ? ("up" as const) : delta < 0 ? ("down" as const) : ("neutral" as const),
+    bodyFatDeltaText: formatBodyFatDelta(bodyFatDelta),
   };
+}
+
+function formatBodyFatMetric(value: number | null) {
+  return value === null ? undefined : `BF ${formatNumber(value)} kg`;
+}
+
+function formatBodyFatDelta(value: number | null) {
+  if (value === null) {
+    return "BF -";
+  }
+
+  return `BF ${value > 0 ? "+" : ""}${formatNumber(value)} kg`;
 }
 
 function formatNumber(value: number) {
