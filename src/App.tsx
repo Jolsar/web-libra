@@ -330,16 +330,13 @@ function Dashboard({
   const bodyFatPoints = useMemo(
     () =>
       history.flatMap((entry, index) =>
-        entry.body_fat === null || entry.weight <= 0
+        entry.body_fat === null
           ? []
           : [{
               date: entry.date,
               index,
-              value: getBodyFatPercentage(entry.body_fat, entry.weight),
-              trend:
-                entry.body_fat_trend === null || entry.weight_trend <= 0
-                  ? null
-                  : getBodyFatPercentage(entry.body_fat_trend, entry.weight_trend),
+              value: entry.body_fat,
+              trend: entry.body_fat_trend,
             }],
       ),
     [history],
@@ -476,8 +473,9 @@ function HistoryChart({
   const weightDomainMin = weightMin - weightPadding;
   const weightDomainMax = weightMax + weightPadding;
   const latestBodyFat = bodyFatPoints[bodyFatPoints.length - 1]?.value;
-  const bodyFatDomainMin = latestBodyFat === undefined ? 0 : Math.max(0, latestBodyFat - 5);
-  const bodyFatDomainMax = latestBodyFat === undefined ? 10 : latestBodyFat + 5;
+  const bodyFatPadding = latestBodyFat === undefined ? 0.4 : latestBodyFat * 0.05;
+  const bodyFatDomainMin = latestBodyFat === undefined ? 0 : Math.max(0, latestBodyFat - bodyFatPadding);
+  const bodyFatDomainMax = latestBodyFat === undefined ? 1 : latestBodyFat + bodyFatPadding;
   const width = 960;
   const height = 320;
   const left = 54;
@@ -508,7 +506,7 @@ function HistoryChart({
   const bodyFatPath = createChartPath(bodyFatPoints, (point) => x(point.index), bodyFatY, (point) => point.value);
   const bodyFatTrendPath = createChartPath(bodyFatPoints, (point) => x(point.index), bodyFatY, (point) => point.trend);
   const weightTicks = [weightDomainMin, (weightDomainMin + weightDomainMax) / 2, weightDomainMax];
-  const bodyFatTicks = [bodyFatDomainMin, latestBodyFat ?? 5, bodyFatDomainMax];
+  const bodyFatTicks = [bodyFatDomainMin, latestBodyFat ?? 0.5, bodyFatDomainMax];
 
   function activatePoint(point: ChartPoint, label: string, unit: string, pointX: number, pointY: number) {
     setActivePoint({
@@ -543,7 +541,7 @@ function HistoryChart({
             <g key={tick}>
               <line className="body-fat-axis-tick" x1={width - right} x2={width - right + 6} y1={bodyFatY(tick)} y2={bodyFatY(tick)} />
               <text className="axis-label end" x={width - 8} y={bodyFatY(tick) + 5}>
-                {formatNumber(tick)}%
+                {formatNumber(tick)} kg
               </text>
             </g>
           ))}
@@ -574,10 +572,10 @@ function HistoryChart({
               cy={bodyFatY(point.value)}
               r="4"
               tabIndex={0}
-              aria-label={`${formatNumber(point.value)}% body fat on ${formatDateTime(point.date)}`}
+              aria-label={`${formatNumber(point.value)} kg body fat on ${formatDateTime(point.date)}`}
               onBlur={() => setActivePoint(null)}
-              onFocus={() => activatePoint(point, "Body fat", "%", x(point.index), bodyFatY(point.value))}
-              onMouseEnter={() => activatePoint(point, "Body fat", "%", x(point.index), bodyFatY(point.value))}
+              onFocus={() => activatePoint(point, "Body fat", "kg", x(point.index), bodyFatY(point.value))}
+              onMouseEnter={() => activatePoint(point, "Body fat", "kg", x(point.index), bodyFatY(point.value))}
               onMouseLeave={() => setActivePoint(null)}
             />
           ))}
@@ -644,8 +642,8 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
             <th>Date</th>
             <th>Weight</th>
             <th>Trend</th>
-            {hasBodyFat && <th>Body fat (%)</th>}
-            {hasBodyFat && <th>Body fat trend (%)</th>}
+            {hasBodyFat && <th>Body fat</th>}
+            {hasBodyFat && <th>Body fat trend</th>}
             {hasLogs && <th>Comment</th>}
           </tr>
         </thead>
@@ -657,16 +655,12 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
               <td>{formatNumber(entry.weight_trend)} kg</td>
               {hasBodyFat && (
                 <td>
-                  {entry.body_fat === null || entry.weight <= 0
-                    ? "-"
-                    : `${formatNumber(getBodyFatPercentage(entry.body_fat, entry.weight))}%`}
+                  {entry.body_fat === null ? "-" : `${formatNumber(entry.body_fat)} kg`}
                 </td>
               )}
               {hasBodyFat && (
                 <td>
-                  {entry.body_fat_trend === null || entry.weight_trend <= 0
-                    ? "-"
-                    : `${formatNumber(getBodyFatPercentage(entry.body_fat_trend, entry.weight_trend))}%`}
+                  {entry.body_fat_trend === null ? "-" : `${formatNumber(entry.body_fat_trend)} kg`}
                 </td>
               )}
               {hasLogs && <td>{entry.log || "-"}</td>}
@@ -692,10 +686,6 @@ function getSummary(entries: WeightEntry[]) {
     deltaText: `${sign}${formatNumber(delta)} kg`,
     deltaTone: delta > 0 ? ("up" as const) : delta < 0 ? ("down" as const) : ("neutral" as const),
   };
-}
-
-function getBodyFatPercentage(bodyFat: number, weight: number) {
-  return (bodyFat / weight) * 100;
 }
 
 function formatNumber(value: number) {
