@@ -472,10 +472,14 @@ function HistoryChart({
   const weightPadding = Math.max((weightMax - weightMin) * 0.18, 0.4);
   const weightDomainMin = weightMin - weightPadding;
   const weightDomainMax = weightMax + weightPadding;
-  const latestBodyFat = bodyFatPoints[bodyFatPoints.length - 1]?.value;
-  const bodyFatPadding = latestBodyFat === undefined ? 0.4 : latestBodyFat * 0.05;
-  const bodyFatDomainMin = latestBodyFat === undefined ? 0 : Math.max(0, latestBodyFat - bodyFatPadding);
-  const bodyFatDomainMax = latestBodyFat === undefined ? 1 : latestBodyFat + bodyFatPadding;
+  const bodyFatValues = bodyFatPoints.flatMap((point) =>
+    point.trend === null ? [point.value] : [point.value, point.trend],
+  );
+  const bodyFatMin = bodyFatValues.length === 0 ? 0 : Math.min(...bodyFatValues);
+  const bodyFatMax = bodyFatValues.length === 0 ? 1 : Math.max(...bodyFatValues);
+  const bodyFatPadding = Math.max((bodyFatMax - bodyFatMin) * 0.18, 0.4);
+  const bodyFatDomainMin = Math.max(0, bodyFatMin - bodyFatPadding);
+  const bodyFatDomainMax = bodyFatMax + bodyFatPadding;
   const width = 960;
   const height = 320;
   const left = 54;
@@ -506,7 +510,7 @@ function HistoryChart({
   const bodyFatPath = createChartPath(bodyFatPoints, (point) => x(point.index), bodyFatY, (point) => point.value);
   const bodyFatTrendPath = createChartPath(bodyFatPoints, (point) => x(point.index), bodyFatY, (point) => point.trend);
   const weightTicks = [weightDomainMin, (weightDomainMin + weightDomainMax) / 2, weightDomainMax];
-  const bodyFatTicks = [bodyFatDomainMin, latestBodyFat ?? 0.5, bodyFatDomainMax];
+  const bodyFatTicks = [bodyFatDomainMin, (bodyFatDomainMin + bodyFatDomainMax) / 2, bodyFatDomainMax];
 
   function activatePoint(point: ChartPoint, label: string, unit: string, pointX: number, pointY: number) {
     setActivePoint({
