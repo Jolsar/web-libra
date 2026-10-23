@@ -645,6 +645,7 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
             <th>Weight</th>
             <th>Trend</th>
             {hasBodyFat && <th>Body fat (%)</th>}
+            {hasBodyFat && <th>Body fat trend (%)</th>}
             {hasLogs && <th>Comment</th>}
           </tr>
         </thead>
@@ -659,6 +660,13 @@ function WeightTable({ entries }: { entries: WeightEntry[] }) {
                   {entry.body_fat === null || entry.weight <= 0
                     ? "-"
                     : `${formatNumber(getBodyFatPercentage(entry.body_fat, entry.weight))}%`}
+                </td>
+              )}
+              {hasBodyFat && (
+                <td>
+                  {entry.body_fat_trend === null || entry.weight_trend <= 0
+                    ? "-"
+                    : `${formatNumber(getBodyFatPercentage(entry.body_fat_trend, entry.weight_trend))}%`}
                 </td>
               )}
               {hasLogs && <td>{entry.log || "-"}</td>}
